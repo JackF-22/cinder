@@ -6,13 +6,13 @@
 // ========== GENERAL ===========
 #define GREEN "\033[0;32m"
 #define RED   "\033[0;31m"
+#define WHITE "\033[0;37m"
 #define CORRECT_MARK "\u2713"
 #define INCORRECT_MARK "\u2717"
 
 
 // ========== ASSERTION =========
 #define CHECK(expr) report_result(expr, __FILE__, __LINE__)
-
 void report_result(int result, const char *file, int line);
 
 
@@ -22,18 +22,23 @@ typedef void (*CinderTestFn)(void);
 
 typedef struct {
     CinderTestFn f;
-    int status;
+    int checks;
+    int passed;
 } CinderTest;
+
+// External variable to keep track of current testing function
+extern CinderTest *current_test;
 
 typedef struct {
     int num_funcs;
-    CinderTestFn *func_list;
+    CinderTest *test_list;
     int capacity;
 } FuncRegister;
 
 FuncRegister *init_reg(void);
+CinderTest *init_test(CinderTestFn func);
 void free_register(FuncRegister *reg);
-void register_function(FuncRegister *reg, CinderTestFn func);
+void register_test(FuncRegister *reg, CinderTest test);
 void run_function(CinderTestFn *func, int n);
 void reg_run(FuncRegister *reg);
 
