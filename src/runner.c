@@ -10,8 +10,20 @@
 FuncRegister *init_reg(void) {
     FuncRegister *reg = malloc(sizeof(FuncRegister));
     reg->num_funcs = 0;
-    reg->func_list = malloc(MAXFUNCS * sizeof(CinderTestFn*));
+    reg->capacity = FUNC_BUFF;
+    reg->func_list = malloc(reg->capacity * sizeof(CinderTestFn));
     return reg;
+}
+
+
+/**
+ * Clean up the memory given to a function register
+ * 
+ * @param reg The register that we are cleaning up
+ */
+void free_register(FuncRegister *reg) {
+    free(reg->func_list);
+    free(reg);
 }
 
 
@@ -22,8 +34,13 @@ FuncRegister *init_reg(void) {
  * @param func The function we are adding to the register
  */
 void register_function(FuncRegister *reg, CinderTestFn new_function) {
+    if (reg->num_funcs >= reg->capacity) {
+        reg->capacity *= 2;
+        reg->func_list = (CinderTestFn*) realloc(reg->func_list, reg->capacity * sizeof(CinderTestFn));
+    }
     reg->func_list[reg->num_funcs] = new_function;
     reg->num_funcs++;
+    return;
 }
 
 
@@ -43,6 +60,7 @@ void run_function(CinderTestFn *func, int n) {
 
     return;
 }
+
 
 /**
  * Run a series of testing functions with a dynamic function list
