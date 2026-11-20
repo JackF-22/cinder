@@ -5,6 +5,19 @@
 
 
 /**
+ * Create a new test structure
+ * 
+ * @param func The function that we are basing this structure on
+ */
+CinderTest *init_test(CinderTestFn func) {
+    CinderTest *ct = malloc(sizeof(CinderTest));
+    ct->f = func;
+    ct->status = -1;
+    return ct;
+}
+
+
+/**
  * Initialize a function register for testing
  */
 FuncRegister *init_reg(void) {

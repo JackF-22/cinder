@@ -7,14 +7,17 @@ void sum_test(void);
 void difference_test(void);
 
 int main(void) {
-    FuncRegister *reg = init_reg();
-    register_function(reg, &sum_test);
-    register_function(reg, &difference_test);
+    // FuncRegister *reg = init_reg();
+    // register_function(reg, &sum_test);
+    // register_function(reg, &difference_test);
     
-    reg_run(reg);
+    // reg_run(reg);
 
-    // Clean up memory
-    free_register(reg);
+    // // Clean up memory
+    // free_register(reg);
+
+    CHECK(10 == 10);
+    CHECK(10 == 11);
 
     return 0;
 }
