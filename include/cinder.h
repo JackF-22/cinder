@@ -12,8 +12,9 @@
 
 
 // ========== ASSERTION =========
-#define CHECK(expr) report_result(expr, __FILE__, __LINE__)
-void report_result(int result, const char *file, int line);
+#define TEST(reg, func) handle_test(reg, func, #func)
+#define CHECK(expr) report_result(expr, #expr, __FILE__, __LINE__)
+void report_result(int result, const char *expr, const char *file, int line);
 
 
 // ========== RUNNER ============
@@ -22,6 +23,7 @@ typedef void (*CinderTestFn)(void);
 
 typedef struct {
     CinderTestFn f;
+    char *name;
     int checks;
     int passed;
 } CinderTest;
@@ -36,9 +38,11 @@ typedef struct {
 } FuncRegister;
 
 FuncRegister *init_reg(void);
-CinderTest *init_test(CinderTestFn func);
+// CinderTest *init_test(CinderTestFn func);
+
+void handle_test(FuncRegister *reg, CinderTestFn func, char *name);
 void free_register(FuncRegister *reg);
-void register_test(FuncRegister *reg, CinderTest test);
+void register_test(FuncRegister *reg, CinderTest *test);
 void run_function(CinderTestFn *func, int n);
 void reg_run(FuncRegister *reg);
 

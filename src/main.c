@@ -8,11 +8,10 @@ void difference_test(void);
 
 int main(void) {
     FuncRegister *reg = init_reg();
-    CinderTest *test = init_test(sum_test);
+    TEST(reg, sum_test);
+    TEST(reg, difference_test);
 
-    register_test(reg, *test);
-    // register_function(reg, &difference_test);
-    
+    // Run the tests
     reg_run(reg);
 
     // Clean up memory

@@ -16,12 +16,9 @@ int difference(int a, int b) {
 
 // Example Test
 void sum_test(void) {
-    int c = sum(4, 5);
-    CHECK(c == 9);
-    // (c == 9) ? printf("Correct!\n") : printf("Incorrect!\n");
+    CHECK(4 + 8 == 13);
 }
 
 void difference_test(void) {
-    int c = difference(11, 6);
-    (c == 5) ? printf("Correct!\n") : printf("Incorrect!\n");
+    CHECK(10 - 5 == 5);
 }

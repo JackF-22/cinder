@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "cinder.h"
 
-void report_result(int result, const char *file, int line) {
+void report_result(int result, const char *expr, const char *file, int line) {
     // Update the current test stats
     current_test->checks++;
 
@@ -10,6 +10,7 @@ void report_result(int result, const char *file, int line) {
         current_test->passed++;
     }
     else {
-        printf("%s%s FAILED | Failure in file: %s on line: %d\n", RED, INCORRECT_MARK, file, line);
+        printf("%s%s FAILED %s\n%s:%d\nCHECK failed: %s\n",
+                RED, INCORRECT_MARK, current_test->name, file, line, expr);
     }
 }

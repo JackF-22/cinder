@@ -11,11 +11,22 @@ CinderTest *current_test = NULL;
  * 
  * @param func The function that we are basing this structure on
  */
-CinderTest *init_test(CinderTestFn func) {
+void handle_test(FuncRegister *reg, CinderTestFn func, char *name) {
+    // Step 1. Create the CinderTest struct for this specific function
     CinderTest *ct = malloc(sizeof(CinderTest));
+    ct->name = malloc(40);
+    
+    if (strlen(name) >= 40) {
+        printf("Name is too long\n");
+        return;
+    }
+
+    strcpy(ct->name, name);
     ct->f = func;
     ct->passed = 0;
-    return ct;
+
+    // Step 2. Register the test in the given register
+    register_test(reg, ct);
 }
 
 
@@ -48,31 +59,13 @@ void free_register(FuncRegister *reg) {
  * @param reg The function register we are adding to
  * @param func The function we are adding to the register
  */
-void register_test(FuncRegister *reg, CinderTest new_test) {
+void register_test(FuncRegister *reg, CinderTest *new_test) {
     if (reg->num_funcs >= reg->capacity) {
         reg->capacity *= 2;
         reg->test_list = (CinderTest*) realloc(reg->test_list, reg->capacity * sizeof(CinderTestFn));
     }
-    reg->test_list[reg->num_funcs] = new_test;
+    reg->test_list[reg->num_funcs] = *new_test;
     reg->num_funcs++;
-    return;
-}
-
-
-/**
- * Run a series of testing functions
- * 
- * @param func Pointer to the start of a list of function pointers
- * @param n The number of functions to run
- */
-void run_function(CinderTestFn *func, int n) {
-    CinderTestFn current = *func;
-
-    for (int i = 0; i < n; i++) {
-        current = *(func + i);
-        current();
-    }
-
     return;
 }
 
@@ -85,10 +78,33 @@ void run_function(CinderTestFn *func, int n) {
 void reg_run(FuncRegister *reg) {
     for (int i = 0; i < reg->num_funcs; i++) {
         CinderTest test = *(reg->test_list + i);
+        printf("Testing: %s\n", test.name);
+
         CinderTestFn current = test.f;
         current_test = &test;
         current();
-        printf("%sTests Passed: %d/%d\n", WHITE, test.passed, test.checks);
+        printf("%sTests Passed: %d/%d\n\n", WHITE, test.passed, test.checks);
     }
     return;
 }
+
+
+
+
+// ============== Old Code ==============
+// /**
+//  * Run a series of testing functions
+//  * 
+//  * @param func Pointer to the start of a list of function pointers
+//  * @param n The number of functions to run
+//  */
+// void run_function(CinderTestFn *func, int n) {
+//     CinderTestFn current = *func;
+
+//     for (int i = 0; i < n; i++) {
+//         current = *(func + i);
+//         current();
+//     }
+
+//     return;
+// }
