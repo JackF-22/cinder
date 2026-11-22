@@ -77,15 +77,22 @@ void register_test(FuncRegister *reg, CinderTest *new_test) {
  */
 void reg_run(FuncRegister *reg) {
     for (int i = 0; i < reg->num_funcs; i++) {
-        CinderTest test = *(reg->test_list + i);
-        printf("Testing: %s\n", test.name);
+        CinderTest *test = reg->test_list + i;
+        printf("Testing: %s\n", test->name);
 
-        CinderTestFn current = test.f;
-        current_test = &test;
+        CinderTestFn current = test->f;
+        current_test = test;
         current();
-        printf("%sTests Passed: %d/%d\n\n", WHITE, test.passed, test.checks);
+        printf("%sTests Passed: %d/%d\n\n", WHITE, test->passed, test->checks);
     }
     return;
+}
+
+
+int main(void) {
+
+
+    return 0;
 }
 
 

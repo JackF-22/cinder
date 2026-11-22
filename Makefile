@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -Wpedantic -g -std=c11
 CPPFLAGS = -Iinclude
 
 TARGET = cinder
-SRC = src/main.c src/runner.c src/assertion.c tests/test_runner.c 
+SRC = src/runner.c src/assertion.c tests/test_runner.c 
 
 .PHONY: all run clean
 

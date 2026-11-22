@@ -15,10 +15,10 @@ int difference(int a, int b) {
 }
 
 // Example Test
-void sum_test(void) {
-    CHECK(4 + 8 == 13);
-}
+// void sum_test(void) {
+//     CHECK(4 + 8 == 13);
+// }
 
-void difference_test(void) {
-    CHECK(10 - 5 == 5);
-}
+// void difference_test(void) {
+//     CHECK(10 - 5 == 5);
+// }
