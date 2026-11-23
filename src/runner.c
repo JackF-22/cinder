@@ -77,8 +77,8 @@ int run_functions(void) {
 
             if(write(fd[1], &current_test->passed, sizeof(int)) != sizeof(int) ||
                write(fd[1], &current_test->checks, sizeof(int)) != sizeof(int)) {
-                 perror("Pipe writing error");
-                 exit(EXIT_FAILURE);
+                printf("Incorrect size passed\n");
+                success = 0;
             }
 
             close(fd[1]);
@@ -98,17 +98,23 @@ int run_functions(void) {
                     // close(fd[1]);
                     // close(fd[0]);
                     printf("Error: Exited with code %d\n", code);
-                    success = 0;
+                    exit(EXIT_FAILURE);
                 }
                 else {
-                    int child_checks;
-                    int child_passed;
+                    int child_checks = 0;
+                    int child_passed = 0;
                     // close(fd[1]);   // Close the writing end
 
                     // Read from the child
-                    read(fd[0], &child_passed, sizeof(int));
-                    read(fd[0], &child_checks, sizeof(int));
-                    // close(fd[0]);
+                    int passed_read = read(fd[0], &child_passed, sizeof(int));
+                    int checks_read = read(fd[0], &child_checks, sizeof(int));
+
+                    // Error handling the reads
+                    if (read(fd[0], &child_passed, sizeof(int)) != sizeof(int) ||
+                        read(fd[0], &child_checks, sizeof(int)) != sizeof(int)) {
+                        printf("Read error\n");
+                        success = 0;
+                    }
 
                     printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
                     if (child_passed != child_checks) {
