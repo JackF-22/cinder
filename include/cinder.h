@@ -1,6 +1,5 @@
 #ifndef CINDER_H
 #define CINDER_H
-
 #include <stddef.h>
 
 // ========== GENERAL ===========
@@ -11,39 +10,53 @@
 #define INCORRECT_MARK "\u2717"
 
 
-// ========== ASSERTION =========
-#define TEST(reg, func) handle_test(reg, func, #func)
-#define CHECK(expr) report_result(expr, #expr, __FILE__, __LINE__)
-void report_result(int result, const char *expr, const char *file, int line);
-
-
 // ========== RUNNER ============
 #define FUNC_BUFF 100
-typedef void (*CinderTestFn)(void);
+typedef void (*cinder_test_fn)(void);
 
-typedef struct {
-    CinderTestFn f;
-    char *name;
+struct cinder_test {
+    cinder_test_fn test;
+    char *function_name;
+    char *msg;
     int checks;
     int passed;
-} CinderTest;
+};
 
-// External variable to keep track of current testing function
-extern CinderTest *current_test;
 
-typedef struct {
-    int num_funcs;
-    CinderTest *test_list;
-    int capacity;
-} FuncRegister;
+// ========== FUNCTIONS ==========
+void report_result(int result, char *expr, char *file, int line);
+void register_test(struct cinder_test *test);
 
-FuncRegister *init_reg(void);
-// CinderTest *init_test(CinderTestFn func);
 
-void handle_test(FuncRegister *reg, CinderTestFn func, char *name);
-void free_register(FuncRegister *reg);
-void register_test(FuncRegister *reg, CinderTest *test);
-void run_function(CinderTestFn *func, int n);
-void reg_run(FuncRegister *reg);
+// ========== MACROS =========
+#define CHECK(expr) report_result(expr, #expr, __FILE__, __LINE__)
+
+#define CINDER_NAME(Function, Suffix)                                   \
+    Function ## _ ## Suffix
+
+#define CINDER_PROTOTYPE(Function)                                      \
+    void CINDER_NAME(Function, fn)(void)
+
+#define TEST(Function, Message)                                         \
+    CINDER_PROTOTYPE(Function);                                         \
+    struct cinder_test CINDER_NAME(Function, meta) = {                  \
+        CINDER_NAME(Function, fn),                                      \
+        #Function,                                                      \
+        Message,                                                        \
+        0,                                                              \
+        0                                                               \
+    };                                                                  \
+    __attribute__((constructor))                                        \
+    static void CINDER_NAME(Function, reg)(void) {                      \
+        register_test(&CINDER_NAME(Function, meta));                    \
+    }                                                                   \
+    CINDER_PROTOTYPE(Function)              
+
+
+
+// ========== GLOBAL =========
+extern struct cinder_test **testing_list;
+extern struct cinder_test *current_test;
+
 
 #endif

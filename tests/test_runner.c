@@ -14,6 +14,10 @@ int difference(int a, int b) {
     return subtract;
 }
 
+TEST(sum, "Two negative numbers") {
+    CHECK(-4 + -5 == -9);
+}
+
 // Example Test
 // void sum_test(void) {
 //     CHECK(4 + 8 == 13);
