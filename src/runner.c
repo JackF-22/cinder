@@ -18,10 +18,21 @@ void register_test(struct cinder_test *test) {
     if (testing_list == NULL) {
         // Allocate space for the array of pointers
         testing_list = malloc(FUNC_BUFF * sizeof(struct cinder_test *));
+        if (testing_list == NULL) {
+            perror("Failed to allocate memory");
+            exit(EXIT_FAILURE);
+        }
     }
     else if (num_tests >= test_cap) {
         // Reallocate to alter space
-        testing_list = realloc(testing_list, (test_cap * 2) * sizeof(struct cinder_test *));
+        struct cinder_test **tmp = realloc(testing_list, (test_cap * 2) * sizeof(struct cinder_test *));
+        if (tmp != NULL) {
+            testing_list = tmp;
+        }
+        else {
+            perror("Reallocation failed");
+            exit(EXIT_FAILURE);
+        }
         test_cap *= 2;
     }
 
@@ -41,8 +52,7 @@ int run_functions(void) {
         cinder_test_fn f = current_test->test;
 
         // Print general test information:
-        printf("\n========= TEST %d =========\n", i+1);
-        printf("Function: %s  |  %s\n", current_test->function_name, current_test->msg);
+        printf("\n========= TEST: %s =========\n", current_test->function_name);
         f();
 
         // Print testing results:
