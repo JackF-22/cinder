@@ -22,6 +22,12 @@ TEST(bigger_numbers, sum, "Bigger numbers") {
     CHECK(521 + 342 == 863);
 }
 
+TEST(crash, null, "Dereferencing NULL") {
+    int *p = NULL;
+    *p = 1;        // writing to address 0, so the OS sends SIGSEGV
+    CHECK(1);      // never reached
+}
+
 // Example Test
 // void sum_test(void) {
 //     CHECK(4 + 8 == 13);

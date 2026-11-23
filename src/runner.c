@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,11 +74,13 @@ int run_functions(void) {
             
             // Run the function and get final counts to the parent
             f();
-            write(fd[1], &current_test->passed, sizeof(int));
-            write(fd[1], &current_test->checks, sizeof(int));
 
-            // Write this to the pipe
-            // write(fd[1], output, strlen(output) + 1);
+            if(write(fd[1], &current_test->passed, sizeof(int)) != sizeof(int) ||
+               write(fd[1], &current_test->checks, sizeof(int)) != sizeof(int)) {
+                 perror("Pipe writing error");
+                 exit(EXIT_FAILURE);
+            }
+
             close(fd[1]);
             exit(EXIT_SUCCESS);
         }
@@ -85,45 +88,48 @@ int run_functions(void) {
             // Wait for child to send a string
             int status;
             waitpid(pid, &status, 0);
+            close(fd[1]);
 
             if (WIFEXITED(status)) {
                 // the child called exit() or returned normally
                 int code = WEXITSTATUS(status);   // the number it passed to exit()
 
                 if (code != 0) {
-                    perror("Child process failed");
-                    close(fd[1]);
-                    close(fd[0]);
-                    exit(EXIT_FAILURE);
+                    // close(fd[1]);
+                    // close(fd[0]);
+                    printf("Error: Exited with code %d\n", code);
+                    success = 0;
                 }
                 else {
                     int child_checks;
                     int child_passed;
-                    close(fd[1]);   // Close the writing end
+                    // close(fd[1]);   // Close the writing end
 
                     // Read from the child
                     read(fd[0], &child_passed, sizeof(int));
                     read(fd[0], &child_checks, sizeof(int));
-                    close(fd[0]);
+                    // close(fd[0]);
 
                     printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
+                    if (child_passed != child_checks) {
+                        success = 0;
+                    }
                 }
             }
             else if (WIFSIGNALED(status)) {
                 // a signal killed the child
                 int sig = WTERMSIG(status);       // e.g. SIGSEGV = 11
                 printf("CRASHED: %s\n", strsignal(sig));
+                success = 0;
             }
+
+            close(fd[0]);
         }
         else {
             perror("Forking error");
             close(fd[0]);
             close(fd[1]);
             exit(EXIT_FAILURE);
-        }
-
-        if (current_test->passed != current_test->checks) {
-            success = 0;
         }
     }
     printf("\n");
