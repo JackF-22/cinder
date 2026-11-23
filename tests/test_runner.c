@@ -14,15 +14,15 @@ int difference(int a, int b) {
     return subtract;
 }
 
-TEST(negatives, sum, "Two negative numbers") {
+TEST(sum, negatives, "Two negative numbers") {
     CHECK(-4 + -5 == -9);
 }
 
-TEST(bigger_numbers, sum, "Bigger numbers") {
+TEST(sum, bigger_numbers, "Bigger numbers") {
     CHECK(521 + 342 == 863);
 }
 
-TEST(crash, null, "Dereferencing NULL") {
+TEST(null, crash, "Dereferencing NULL") {
     int *p = NULL;
     *p = 1;        // writing to address 0, so the OS sends SIGSEGV
     CHECK(1);      // never reached

@@ -14,9 +14,10 @@
 #define FUNC_BUFF 100
 typedef void (*cinder_test_fn)(void);
 
-struct cinder_test {
+static struct cinder_test {
     cinder_test_fn test;
-    char *function_name;
+    char *suite;
+    char *name;
     char *msg;
     int checks;
     int passed;
@@ -31,26 +32,27 @@ void register_test(struct cinder_test *test);
 // ========== MACROS =========
 #define CHECK(expr) report_result(!!(expr), #expr, __FILE__, __LINE__)
 
-#define CINDER_NAME(Suite, Function, Suffix)                            \
-    Function ## _ ## Suite ## _ ## Suffix
+#define CINDER_NAME(Suite, Name, Suffix)                            \
+    Suite ## _ ## Name ## _ ## Suffix
 
-#define CINDER_PROTOTYPE(Suite, Function)                               \
-    void CINDER_NAME(Suite, Function, fn)(void)
+#define CINDER_PROTOTYPE(Suite, Name)                               \
+    static void CINDER_NAME(Suite, Name, fn)(void)
 
-#define TEST(Suite, Function, Message)                                  \
-    CINDER_PROTOTYPE(Suite, Function);                                  \
-    struct cinder_test CINDER_NAME(Suite, Function, meta) = {           \
-        CINDER_NAME(Suite, Function, fn),                               \
-        #Function,                                                      \
-        Message,                                                        \
-        0,                                                              \
-        0                                                               \
-    };                                                                  \
-    __attribute__((constructor))                                        \
-    static void CINDER_NAME(Suite, Function, reg)(void) {               \
-        register_test(&CINDER_NAME(Suite, Function, meta));             \
-    }                                                                   \
-    CINDER_PROTOTYPE(Suite, Function)              
+#define TEST(Suite, Name, Message)                                  \
+    CINDER_PROTOTYPE(Suite, Name);                                  \
+    struct cinder_test CINDER_NAME(Suite, Name, meta) = {           \
+        CINDER_NAME(Suite, Name, fn),                               \
+        #Suite,                                                     \
+        #Name,                                                      \
+        Message,                                                    \
+        0,                                                          \
+        0                                                           \
+    };                                                              \
+    __attribute__((constructor))                                    \
+    static void CINDER_NAME(Suite, Name, reg)(void) {               \
+        register_test(&CINDER_NAME(Suite, Name, meta));             \
+    }                                                               \
+    CINDER_PROTOTYPE(Suite, Name)              
 
 
 

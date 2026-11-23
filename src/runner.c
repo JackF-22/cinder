@@ -56,7 +56,7 @@ int run_functions(void) {
         cinder_test_fn f = current_test->test;
 
         // Print general test information:
-        printf("\n========= TEST: %s =========\n", current_test->function_name);
+        printf("\n========= %s: %s =========\n", current_test->suite, current_test->name);
 
         // Fork the process, create a child
         int fd[2];
@@ -95,19 +95,12 @@ int run_functions(void) {
                 int code = WEXITSTATUS(status);   // the number it passed to exit()
 
                 if (code != 0) {
-                    // close(fd[1]);
-                    // close(fd[0]);
                     printf("Error: Exited with code %d\n", code);
                     exit(EXIT_FAILURE);
                 }
                 else {
                     int child_checks = 0;
                     int child_passed = 0;
-                    // close(fd[1]);   // Close the writing end
-
-                    // Read from the child
-                    int passed_read = read(fd[0], &child_passed, sizeof(int));
-                    int checks_read = read(fd[0], &child_checks, sizeof(int));
 
                     // Error handling the reads
                     if (read(fd[0], &child_passed, sizeof(int)) != sizeof(int) ||
