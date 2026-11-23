@@ -6,11 +6,11 @@ void report_result(int result, char *expr, char *file, int line) {
     current_test->checks++;
 
     if (result) {
-        printf("%s%s PASSED\n", GREEN, CORRECT_MARK);
+        printf("%s%s PASSED\n%s", GREEN, CORRECT_MARK, RESET);
         current_test->passed++;
     }
     else {
-        printf("%s%s FAILED %s\n%s:%d\nCHECK failed: %s\n",
-                RED, INCORRECT_MARK, current_test->msg, file, line, expr);
+        printf("%s%s FAILED %s\n%s:%d\nCHECK failed: %s\n%s",
+                RED, INCORRECT_MARK, current_test->msg, file, line, expr, RESET);
     }
 }

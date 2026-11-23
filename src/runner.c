@@ -34,11 +34,8 @@ void register_test(struct cinder_test *test) {
 /**
  * Move through the testing_list and run the test functions
  */
-void run_functions(void) {
-    if (current_test == NULL) {
-        current_test = malloc(sizeof(struct cinder_test *));
-    }
-
+int run_functions(void) {
+    int success = 1;
     for (int i = 0; i < num_tests; i++) {
         current_test = *(testing_list + i);
         cinder_test_fn f = current_test->test;
@@ -49,24 +46,18 @@ void run_functions(void) {
         f();
 
         // Print testing results:
-        printf("%d/%d Tests Passed\n\n", current_test->passed, current_test->checks);
-    }
-}
+        printf("%d/%d Checks Passed\n\n", current_test->passed, current_test->checks);
 
-
-/**
- * Free the space created to store the testing functions
- */
-void free_functions(void) {
-    for (int i = 0; i < num_tests; i++) {
-        free(*(testing_list + num_tests));
+        if (current_test->passed != current_test->checks) {
+            success = 0;
+        }
     }
-    free(testing_list);
+    return success;
 }
 
 
 int main(void) {
-    run_functions();
-    return 0;
+    int correct = run_functions();
+    return correct ? 0 : EXIT_FAILURE;
 }
 

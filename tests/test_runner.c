@@ -15,7 +15,7 @@ int difference(int a, int b) {
 }
 
 TEST(sum, "Two negative numbers") {
-    CHECK(-4 + -5 == -9);
+    CHECK(-4 + -5 == -8);
 }
 
 // Example Test

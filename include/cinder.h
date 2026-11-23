@@ -5,7 +5,7 @@
 // ========== GENERAL ===========
 #define GREEN "\033[0;32m"
 #define RED   "\033[0;31m"
-#define WHITE "\033[0;37m"
+#define RESET "\033[0m"
 #define CORRECT_MARK "\u2713"
 #define INCORRECT_MARK "\u2717"
 
@@ -29,7 +29,7 @@ void register_test(struct cinder_test *test);
 
 
 // ========== MACROS =========
-#define CHECK(expr) report_result(expr, #expr, __FILE__, __LINE__)
+#define CHECK(expr) report_result(!!(expr), #expr, __FILE__, __LINE__)
 
 #define CINDER_NAME(Function, Suffix)                                   \
     Function ## _ ## Suffix
