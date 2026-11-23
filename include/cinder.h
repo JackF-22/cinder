@@ -8,6 +8,7 @@
 #define RESET "\033[0m"
 #define CORRECT_MARK "\u2713"
 #define INCORRECT_MARK "\u2717"
+#define TIMEOUT 5
 
 
 // ========== RUNNER ============
@@ -25,12 +26,14 @@ static struct cinder_test {
 
 
 // ========== FUNCTIONS ==========
-void report_result(int result, char *expr, char *file, int line);
+void report_result(int result, char *expr, char *file, int line, int type);
 void register_test(struct cinder_test *test);
-
+void cinder_finish_test(void);
+ 
 
 // ========== MACROS =========
-#define CHECK(expr) report_result(!!(expr), #expr, __FILE__, __LINE__)
+#define CHECK(expr) report_result(!!(expr), #expr, __FILE__, __LINE__, 0)
+#define REQUIRE(expr) report_result(!!(expr), #expr, __FILE__, __LINE__, 1)
 
 #define CINDER_NAME(Suite, Name, Suffix)                            \
     Suite ## _ ## Name ## _ ## Suffix

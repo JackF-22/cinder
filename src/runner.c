@@ -5,11 +5,15 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "cinder.h"
+#include <signal.h>
 
 struct cinder_test **testing_list = NULL;
 struct cinder_test *current_test = NULL;
 static int num_tests = 0;
 static int test_cap  = FUNC_BUFF;
+
+// Public file descriptors
+int test_fd[2];
 
 
 /**
@@ -46,6 +50,20 @@ void register_test(struct cinder_test *test) {
 
 
 /**
+ * Finish the function such that we write to the proper file descriptor
+ */
+void cinder_finish_test(void) {
+    if(write(test_fd[1], &current_test->passed, sizeof(int)) != sizeof(int) ||
+       write(test_fd[1], &current_test->checks, sizeof(int)) != sizeof(int)) {
+        printf("Incorrect size passed\n");
+    }
+
+    close(test_fd[1]);
+    exit(EXIT_SUCCESS);
+}
+
+
+/**
  * Move through the testing_list and run the test functions
  */
 int run_functions(void) {
@@ -59,8 +77,8 @@ int run_functions(void) {
         printf("\n========= %s: %s =========\n", current_test->suite, current_test->name);
 
         // Fork the process, create a child
-        int fd[2];
-        if (pipe(fd) == -1) {
+        // int fd[2];
+        if (pipe(test_fd) == -1) {
           perror("Piping error");
           exit(EXIT_FAILURE);
         }
@@ -70,25 +88,20 @@ int run_functions(void) {
 
         if (pid == 0) {
             // Child process, run our function
-            close(fd[0]);  // Close the reading end
+            close(test_fd[0]);  // Close the reading end
             
             // Run the function and get final counts to the parent
+            alarm(TIMEOUT);
             f();
 
-            if(write(fd[1], &current_test->passed, sizeof(int)) != sizeof(int) ||
-               write(fd[1], &current_test->checks, sizeof(int)) != sizeof(int)) {
-                printf("Incorrect size passed\n");
-                success = 0;
-            }
-
-            close(fd[1]);
-            exit(EXIT_SUCCESS);
+            // Call the function to write outputs
+            cinder_finish_test();
         }
         else if (pid > 0) {
             // Wait for child to send a string
             int status;
             waitpid(pid, &status, 0);
-            close(fd[1]);
+            close(test_fd[1]);
 
             if (WIFEXITED(status)) {
                 // the child called exit() or returned normally
@@ -103,8 +116,8 @@ int run_functions(void) {
                     int child_passed = 0;
 
                     // Error handling the reads
-                    if (read(fd[0], &child_passed, sizeof(int)) != sizeof(int) ||
-                        read(fd[0], &child_checks, sizeof(int)) != sizeof(int)) {
+                    if (read(test_fd[0], &child_passed, sizeof(int)) != sizeof(int) ||
+                        read(test_fd[0], &child_checks, sizeof(int)) != sizeof(int)) {
                         printf("Read error\n");
                         success = 0;
                     }
@@ -118,16 +131,21 @@ int run_functions(void) {
             else if (WIFSIGNALED(status)) {
                 // a signal killed the child
                 int sig = WTERMSIG(status);       // e.g. SIGSEGV = 11
-                printf("CRASHED: %s\n", strsignal(sig));
-                success = 0;
+                if (sig == SIGALRM) {
+                    printf("TIMED OUT (5s)\n");
+                }
+                else {
+                    printf("CRASHED: %s\n", strsignal(sig));
+                    success = 0;
+                }
             }
 
-            close(fd[0]);
+            close(test_fd[0]);
         }
         else {
             perror("Forking error");
-            close(fd[0]);
-            close(fd[1]);
+            close(test_fd[0]);
+            close(test_fd[1]);
             exit(EXIT_FAILURE);
         }
     }
