@@ -14,8 +14,12 @@ int difference(int a, int b) {
     return subtract;
 }
 
-TEST(sum, "Two negative numbers") {
+TEST(negatives, sum, "Two negative numbers") {
     CHECK(-4 + -5 == -8);
+}
+
+TEST(bigger_numbers, sum, "Bigger numbers") {
+    CHECK(521 + 342 == 863);
 }
 
 // Example Test

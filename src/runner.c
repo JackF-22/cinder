@@ -49,8 +49,6 @@ void register_test(struct cinder_test *test) {
  */
 int run_functions(void) {
     int success = 1;
-    int fd[2];
-    pipe(fd); // Pipe used to send child results to parent
 
     for (int i = 0; i < num_tests; i++) {
         current_test = *(testing_list + i);
@@ -60,42 +58,75 @@ int run_functions(void) {
         printf("\n========= TEST: %s =========\n", current_test->function_name);
 
         // Fork the process, create a child
+        int fd[2];
+        if (pipe(fd) == -1) {
+          perror("Piping error");
+          exit(EXIT_FAILURE);
+        }
+
         fflush(stdout);
         pid_t pid = fork();
+
         if (pid == 0) {
             // Child process, run our function
             close(fd[0]);  // Close the reading end
             
             // Run the function and get final counts to the parent
             f();
-            char output[50];
-            snprintf(output, sizeof(output), "%d/%d Checks Passed\n\n", current_test->passed, current_test->checks);
+            write(fd[1], &current_test->passed, sizeof(int));
+            write(fd[1], &current_test->checks, sizeof(int));
 
             // Write this to the pipe
-            write(fd[1], output, strlen(output) + 1);
+            // write(fd[1], output, strlen(output) + 1);
             close(fd[1]);
-
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
         else if (pid > 0) {
-            // Parent function, get output from child
-            char results[100];
-            close(fd[1]);   // Close the writing end
+            // Wait for child to send a string
+            int status;
+            waitpid(pid, &status, 0);
 
-            // Read from the child
-            read(fd[0], results, 100);
-            close(fd[0]);
+            if (WIFEXITED(status)) {
+                // the child called exit() or returned normally
+                int code = WEXITSTATUS(status);   // the number it passed to exit()
 
-            printf("Summary: %s\n", results);
+                if (code != 0) {
+                    perror("Child process failed");
+                    close(fd[1]);
+                    close(fd[0]);
+                    exit(EXIT_FAILURE);
+                }
+                else {
+                    int child_checks;
+                    int child_passed;
+                    close(fd[1]);   // Close the writing end
+
+                    // Read from the child
+                    read(fd[0], &child_passed, sizeof(int));
+                    read(fd[0], &child_checks, sizeof(int));
+                    close(fd[0]);
+
+                    printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
+                }
+            }
+            else if (WIFSIGNALED(status)) {
+                // a signal killed the child
+                int sig = WTERMSIG(status);       // e.g. SIGSEGV = 11
+                printf("CRASHED: %s\n", strsignal(sig));
+            }
         }
         else {
             perror("Forking error");
+            close(fd[0]);
+            close(fd[1]);
+            exit(EXIT_FAILURE);
         }
 
         if (current_test->passed != current_test->checks) {
             success = 0;
         }
     }
+    printf("\n");
     return success;
 }
 

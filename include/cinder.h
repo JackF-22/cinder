@@ -31,26 +31,26 @@ void register_test(struct cinder_test *test);
 // ========== MACROS =========
 #define CHECK(expr) report_result(!!(expr), #expr, __FILE__, __LINE__)
 
-#define CINDER_NAME(Function, Suffix)                                   \
-    Function ## _ ## Suffix
+#define CINDER_NAME(Suite, Function, Suffix)                            \
+    Function ## _ ## Suite ## _ ## Suffix
 
-#define CINDER_PROTOTYPE(Function)                                      \
-    void CINDER_NAME(Function, fn)(void)
+#define CINDER_PROTOTYPE(Suite, Function)                               \
+    void CINDER_NAME(Suite, Function, fn)(void)
 
-#define TEST(Function, Message)                                         \
-    CINDER_PROTOTYPE(Function);                                         \
-    struct cinder_test CINDER_NAME(Function, meta) = {                  \
-        CINDER_NAME(Function, fn),                                      \
+#define TEST(Suite, Function, Message)                                  \
+    CINDER_PROTOTYPE(Suite, Function);                                  \
+    struct cinder_test CINDER_NAME(Suite, Function, meta) = {           \
+        CINDER_NAME(Suite, Function, fn),                               \
         #Function,                                                      \
         Message,                                                        \
         0,                                                              \
         0                                                               \
     };                                                                  \
     __attribute__((constructor))                                        \
-    static void CINDER_NAME(Function, reg)(void) {                      \
-        register_test(&CINDER_NAME(Function, meta));                    \
+    static void CINDER_NAME(Suite, Function, reg)(void) {               \
+        register_test(&CINDER_NAME(Suite, Function, meta));             \
     }                                                                   \
-    CINDER_PROTOTYPE(Function)              
+    CINDER_PROTOTYPE(Suite, Function)              
 
 
 
