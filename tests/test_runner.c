@@ -59,3 +59,14 @@ TEST(check, continues, "CHECK keeps going") {
     CHECK(0);
     CHECK(1);
 }
+
+// Testing CHECK_EQ for the first time
+TEST(check_eq, passes, "Passes and continues") {
+    CHECK_EQ(1, 1);
+    CHECK_EQ(12 + 2, 14);
+}
+
+// Testing CHECK_EQ fails
+TEST(check_eq, fails, "False check") {
+    CHECK_EQ(12 + 2, 15);
+}
