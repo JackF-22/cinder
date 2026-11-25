@@ -68,20 +68,25 @@ void cinder_finish_test(void) {
  * Move through the testing_list and run the test functions
  */
 int run_functions(void) {
-    int success = 1;
+    int n_pass = 0;
+    int n_fail = 0;
+    int n_crash = 0;
 
     for (int i = 0; i < num_tests; i++) {
         current_test = *(testing_list + i);
         cinder_test_fn f = current_test->test;
 
         // Print general test information:
-        printf("\n========= %s: %s =========\n", current_test->suite, current_test->name);
+        // printf("\n========= %s: %s =========\n", current_test->suite, current_test->name);
+        printf("\n%s %s/%s  %s\n", CINDER_MARK_TEST, current_test->suite,
+                                    current_test->name, current_test->msg);    
 
         // Fork the process, create a child
         // int fd[2];
         if (pipe(test_fd) == -1) {
-          perror("Piping error");
-          exit(EXIT_FAILURE);
+            n_crash++;
+            perror("Piping error");
+            exit(EXIT_FAILURE);
         }
 
         fflush(stdout);
@@ -110,7 +115,7 @@ int run_functions(void) {
 
                 if (code != 0) {
                     printf("Error: Exited with code %d\n", code);
-                    success = 0;
+                    n_crash++;
                 }
                 else {
                     int child_checks = 0;
@@ -120,14 +125,15 @@ int run_functions(void) {
                     if (read(test_fd[0], &child_passed, sizeof(int)) != sizeof(int) ||
                         read(test_fd[0], &child_checks, sizeof(int)) != sizeof(int)) {
                         printf("Read error\n");
-                        success = 0;
+                        n_crash++;
                     }
                     else {
-                        printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
+                        n_pass++;
+                        printf("  PASS: %d/%d\n", child_passed, child_checks);
                     }
 
                     if (child_passed != child_checks) {
-                        success = 0;
+                        n_fail++;
                     }
                 }
             }
@@ -135,18 +141,19 @@ int run_functions(void) {
                 // a signal killed the child
                 int sig = WTERMSIG(status);       // e.g. SIGSEGV = 11
                 if (sig == SIGALRM) {
-                    printf("TIMED OUT (5s)\n");
-                    success = 0;
+                    printf("  %sTIMED OUT (5s)\n%s", RED, RESET);
+                    n_crash++;
                 }
                 else {
-                    printf("CRASHED: %s\n", strsignal(sig));
-                    success = 0;
+                    printf("  %sCRASHED: %s\n%s", RED, strsignal(sig), RESET);
+                    n_crash++;
                 }
             }
 
             close(test_fd[0]);
         }
         else {
+            n_crash++;
             perror("Forking error");
             close(test_fd[0]);
             close(test_fd[1]);
@@ -154,7 +161,18 @@ int run_functions(void) {
         }
     }
     printf("\n");
-    return success;
+    for (int i = 0; i < 50; i++) {
+        fputs(CINDER_RULE_CHAR, stdout);
+    }
+    printf("\n");
+
+    // Print out final stats
+    int total_tests = n_pass + n_fail + n_crash;
+    printf("%d tests %s %d passed %s %d failed %s %d crashed\n",
+            total_tests, CINDER_SEP, n_pass, CINDER_SEP, n_fail, CINDER_SEP, n_crash);
+    printf("\n");
+    
+    return n_fail + n_crash == 0;
 }
 
 

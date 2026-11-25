@@ -10,6 +10,10 @@
 #define INCORRECT_MARK "\u2717"
 #define CINDER_TIMEOUT 5
 
+#define CINDER_MARK_TEST  "\u25B6"   // ▶
+#define CINDER_RULE_CHAR  "\u2500"   // ─  (box-drawing horizontal line)
+#define CINDER_SEP        "\u00B7"   // ·  (middle dot for the totals line)
+
 
 // ========== RUNNER ============
 #define FUNC_BUFF 100
