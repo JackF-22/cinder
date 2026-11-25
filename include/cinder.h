@@ -8,14 +8,14 @@
 #define RESET "\033[0m"
 #define CORRECT_MARK "\u2713"
 #define INCORRECT_MARK "\u2717"
-#define TIMEOUT 5
+#define CINDER_TIMEOUT 5
 
 
 // ========== RUNNER ============
 #define FUNC_BUFF 100
 typedef void (*cinder_test_fn)(void);
 
-static struct cinder_test {
+struct cinder_test {
     cinder_test_fn test;
     char *suite;
     char *name;
@@ -49,11 +49,11 @@ void cinder_finish_test(void);
 
 #define CHECK_EQ(actual, expected)                                          \
     report_eq((actual), (expected), #actual, #expected,                     \
-               __FILE__, __LINE__, CINDER_EXPECT);                                         
+               __FILE__, __LINE__, CINDER_EXPECT)                                         
 
 #define REQUIRE_EQ(actual, expected)                                        \
     report_eq((actual), (expected), #actual, #expected,                     \
-               __FILE__, __LINE__, CINDER_FATAL);                                   
+               __FILE__, __LINE__, CINDER_FATAL)                                   
 
 
 #define CINDER_NAME(Suite, Name, Suffix)                                    \
@@ -64,7 +64,7 @@ void cinder_finish_test(void);
 
 #define TEST(Suite, Name, Message)                                          \
     CINDER_PROTOTYPE(Suite, Name);                                          \
-    struct cinder_test CINDER_NAME(Suite, Name, meta) = {                   \
+    static struct cinder_test CINDER_NAME(Suite, Name, meta) = {                   \
         CINDER_NAME(Suite, Name, fn),                                       \
         #Suite,                                                             \
         #Name,                                                              \

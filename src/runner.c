@@ -13,7 +13,7 @@ static int num_tests = 0;
 static int test_cap  = FUNC_BUFF;
 
 // Public file descriptors
-int test_fd[2];
+static int test_fd[2];
 
 
 /**
@@ -56,6 +56,7 @@ void cinder_finish_test(void) {
     if(write(test_fd[1], &current_test->passed, sizeof(int)) != sizeof(int) ||
        write(test_fd[1], &current_test->checks, sizeof(int)) != sizeof(int)) {
         printf("Incorrect size passed\n");
+        exit(EXIT_FAILURE);
     }
 
     close(test_fd[1]);
@@ -91,7 +92,7 @@ int run_functions(void) {
             close(test_fd[0]);  // Close the reading end
             
             // Run the function and get final counts to the parent
-            alarm(TIMEOUT);
+            alarm(CINDER_TIMEOUT);
             f();
 
             // Call the function to write outputs
@@ -109,7 +110,7 @@ int run_functions(void) {
 
                 if (code != 0) {
                     printf("Error: Exited with code %d\n", code);
-                    exit(EXIT_FAILURE);
+                    success = 0;
                 }
                 else {
                     int child_checks = 0;
@@ -121,8 +122,10 @@ int run_functions(void) {
                         printf("Read error\n");
                         success = 0;
                     }
+                    else {
+                        printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
+                    }
 
-                    printf("Summary: %d/%d checks passed\n", child_passed, child_checks);
                     if (child_passed != child_checks) {
                         success = 0;
                     }
@@ -133,6 +136,7 @@ int run_functions(void) {
                 int sig = WTERMSIG(status);       // e.g. SIGSEGV = 11
                 if (sig == SIGALRM) {
                     printf("TIMED OUT (5s)\n");
+                    success = 0;
                 }
                 else {
                     printf("CRASHED: %s\n", strsignal(sig));

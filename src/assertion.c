@@ -7,7 +7,7 @@ static void record_result(int passed, enum cinder_severity sev) {
     current_test->checks++;
     current_test->passed += passed;
 
-    if (sev) {
+    if (!passed && sev == CINDER_FATAL) {
         cinder_finish_test();
     }
 }
@@ -32,10 +32,10 @@ void report_eq(long long actual, long long expected, char *actual_str, char *exp
     }
     else {
         // Print the expected and the actual
-        printf("%s%s FAILED: %s\n%s:%d\n%s\n\n%s", 
-                RED, INCORRECT_MARK, current_test->msg, file, line, expected_str, RESET);
+        printf("%s%s FAILED: %s\n%s:%d\n%s\n\n", 
+                RED, INCORRECT_MARK, current_test->msg, file, line, expected_str);
         printf("Expected: %lld\n", expected);
-        printf("Actual:   %lld\n", actual);
+        printf("Actual:   %lld%s\n", actual, RESET);
     }
     record_result((actual == expected), sev);
 }
